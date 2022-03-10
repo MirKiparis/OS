@@ -1,3 +1,4 @@
+   
 """Работа с файлами ( класс File, FileInfo, FileStream и другие)
 Создать файл
 Записать в файл строку
@@ -12,4 +13,7 @@ f.close()
 f = open("text.txt")
 print(f.read())
 f.close()
-os.remove("text.txt")
+x = input("Если не хотите удалить файл нажмите n >>")
+if x != 'n':
+    os.remove("text.txt")
+    print('Файл удален')
