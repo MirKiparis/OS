@@ -27,6 +27,7 @@ def cicle(s,e):
                         word = obj(u, j, k, f, y)
                         if (word.__hash__() == c) or (word.__hash__() == b) or (word.__hash__() == d):
                             print(word.s,th.current_thread().name)
+                            return 1
 
 
 
@@ -36,21 +37,29 @@ if x > 10:
     x = 10
 elif x < 1:
     x = 1
-#with cf.ThreadPoolExecutor(max_workers=x) as ex:
-#   ex.map(cicle, al)
+
 st = 0
 en = 26 // x + 26 % x
 
 threads = []
-start_time = time.monotonic()
+th_time = []
+
 for i in range(x):
     t = th.Thread(target=cicle, args=(st,en))
     threads.append(t)
+    start_time = time.monotonic()
     t.start()
-    print(al[st:en], type(al[st:en]))
+    th_time.append(start_time)
+#    print(al[st:en], type(al[st:en]))
     st = en
     en = en + 26 // x
-for thr in threads:
-    thr.join()
-end_time = time.monotonic()
-print(timedelta(seconds=end_time - start_time))
+#for thr in threads:
+for i in range(x):
+    #thr.join()
+    threads[i].join()
+    end_time = time.monotonic()
+    th_time[i] = end_time - th_time[i]
+#print(timedelta(seconds=end_time - start_time))
+for i in range(x):
+    print(timedelta(seconds=th_time[i]))
+#mbr что такое файловая система чем отличается поток от процесса
