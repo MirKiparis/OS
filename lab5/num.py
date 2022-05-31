@@ -1,6 +1,7 @@
 import threading
 import time
 from threading import Thread
+import random
 
 
 mythreadies = []
@@ -11,42 +12,45 @@ class MyThread(threading.Thread):
     def __init__(self, num):
         super().__init__()
         self.num = num
-        self.alive = 0  # заблокирован - (-1) ожидание - (0) в процессе - (1)
+        self.alive = 0  #  ожидание - (0) в процессе - (1)
         self.prior = 5  # приоритет
         self.res = 0  # результат вычислений
+        self.unblocked = 1
+        self.col = 0
 
     def run(self):
-        print("Thread ", self.num, '\n')
         self.wait()
 
     def wait(self):
-        while not self.alive:
+        while self.unblocked:
+            while not self.alive:
+                pass
+            self.go()
+        self.stop()
+
+    def stop(self):
+        while True:
             pass
-        self.go()
 
     def go(self):
-        for i in range(self.prior):
-            self.res += i
-            time.sleep(1)
-        self.alive = 0
+        while(self.alive):
+            t = random.randint(0,1)
+            self.res = (self.res * self.col + t)/(self.col + 1)
+            self.col += 1
         self.wait()
 
     def changePrior(self, n):
         self.prior = n
 
     def block(self):
-        self.alive = -1
+        self.unblocked = 0
 
-
-for i in range(3):
-    t = MyThread(i)
-    mythreadies.append(t)
 
 
 def zprint():
     print('\n')
     for i1 in range(3):
-        if mythreadies[i1].alive == -1:
+        if mythreadies[i1].unblocked == 0:
             condition = 'block'
         elif mythreadies[i1].alive == 0:
             condition = ' wait'
@@ -59,8 +63,45 @@ def zprint():
 
 
 def only():
-    proverka = mythreadies[0].alive | mythreadies[1].alive | mythreadies[2].alive
+    proverka = mythreadies[0].alive or mythreadies[1].alive or mythreadies[2].alive
     return proverka  # если все потоки стоят то 0 иначе 1
+
+
+
+def inquit():
+    global importantVar
+    while True:
+        q = input()
+        print(1)
+        try:
+            q = int(q)
+            if q == 0 or q == 1 or q == 2:
+                importantVar = 1
+                q2 = input()
+                try:
+                    q2 = int(q2)
+                    if q2 == 0:
+                        mythreadies[q].block()
+                        importantVar = 0
+                    else:
+                        mythreadies[q].changePrior(q2)
+                        importantVar = 0
+                        zprint()
+                except ValueError:
+                    print("\nНЕВЕРНЫЙ ВВОД. Заново\n")
+                    importantVar = 0
+            else:
+                print("askjdfhajksdfhkjasdhflkasjdhflkasjdhfkajdsfhlka")
+        except ValueError:
+            print("\nНЕВЕРНЫЙ ВВОД. Заново\n")
+
+
+def timy(n):
+    t_start = time.time()
+    t_end = 0
+    while(t_end < (t_start + n)):
+        t_end = time.time()
+    return 1
 
 
 def runny():
@@ -69,37 +110,22 @@ def runny():
         mythreadies[i].start()
     while True:
         for i in range(3):
-            zprint()
+
+            if mythreadies[i].unblocked == 0:
+                continue
             while only() or importantVar:
                 pass
             mythreadies[i].alive = 1
+            zprint()
+            if timy(mythreadies[i].prior):
+                mythreadies[i].alive = 0
 
 
-def inquit():
-    global importantVar
-    '''
-    ввести номер потока и приоритет изменится время и результат
-    если ввести номер потока и B то поток окончательно заблокируется
-    '''
-    while True:
-        q = input()
-        if q == '1' or q == '2' or q == '3':
-            importantVar = 1
-            q2 = input()
-            if q2 == 'b' or q2 == 'B':
-                mythreadies[int(q)].alive = -1
-                importantVar = 0
-            else:
-                try:
-                    q2 = int(q2)
-                    mythreadies[int(q)].changePrior(int(q2))
-                    importantVar = 0
-                except ValueError:
-                    print("\nНЕВЕРНЫЙ ВВОД. Заново\n")
-                    importantVar = 0
-        else:
-            print("askjdfhajksdfhkjasdhflkasjdhflkasjdhfkajdsfhlka")
 
-
-inquit = Thread(target = inquit)
+for i in range(3):
+    t = MyThread(i)
+    mythreadies.append(t)
+inquit = Thread(target= inquit)
+inquit.start()
 runny()
+
